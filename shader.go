@@ -1,9 +1,9 @@
 package orchid
 
 import (
-	"io/ioutil"
-
+	"bufio"
 	"fmt"
+	"os"
 
 	"github.com/go-gl/glow/gl"
 )
@@ -43,6 +43,9 @@ func CreateShaderProgram(vertexFilepath, fragmentFilepath string, bindAttributes
 
 func (s ShaderProgram) Start() {
 	gl.UseProgram(s.programID)
+	if s.programID == 1 {
+		fmt.Println("IT was!@")
+	}
 }
 
 func (s ShaderProgram) Stop() {
@@ -71,15 +74,32 @@ func CleanShaderPrograms() {
 }
 
 func loadShader(filepath string, shaderType uint32) (uint32, error) {
-	b, err := ioutil.ReadFile(filepath)
+	// b, err := ioutil.ReadFile(filepath)
 
+	// if err != nil {
+	// 	LogError(err)
+	// }
+
+	// cstring := string(b) + "\x00"
+
+	code := ""
+
+	f, err := os.Open(filepath)
 	if err != nil {
-		LogError(err)
+		panic(err)
 	}
+	defer f.Close()
 
-	cstring := string(b) + "\x00"
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		code += "\n" + scanner.Text()
+	}
+	if err := scanner.Err(); err != nil {
+		panic(err)
+	}
+	code += "\x00"
 
-	shaderCode, free := gl.Strs(cstring)
+	shaderCode, free := gl.Strs(code)
 	defer free()
 
 	shaderID := gl.CreateShader(shaderType)

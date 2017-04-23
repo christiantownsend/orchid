@@ -34,7 +34,7 @@ func Run(o Options) {
 
 	model := loader.LoadToVAO(vertexBufferData, indices)
 
-	staticShader := CreateShaderProgram("shaders/static.vert", "shaders/static.frag", staticShaderBindFunc)
+	staticShader := CreateShaderProgram("shaders/vertexshader.glsl", "shaders/fragmentshader.glsl", staticShaderBindFunc)
 
 	for !window.ShouldClose() {
 		renderer.Prepare()
