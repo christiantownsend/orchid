@@ -10,32 +10,43 @@ import (
 	"github.com/go-gl/glow/gl"
 )
 
+// TexturedModel represents a raw Model and a Texture object together
 type TexturedModel struct {
 	model   Model
 	texture *Texture
 }
 
+// Model represents the ID of the VAO associated with it, as well as the vertex and index counts used in rendering
 type Model struct {
 	vaoID       uint32
 	vertexCount int32
 	indexCount  int32
 }
 
+// Loader stores information about which VAOs, VBOs, and Textures have been loaded
+// Models are created through the Loader
 type Loader struct {
 	vaoIDs, vboIDs, textureIDs []uint32
 }
 
+// Texture represents just the ID of the OpenGL Texture object
 type Texture struct {
 	textureID uint32
 }
 
-// Generates a VBO and VAO which represent a model
+// MakeModel generates a VBO and VAO which represent a model
 func (l Loader) MakeModel(vertices, textureCoords []float32, indices []uint32) Model {
 	// Create new VAO and bind it
 	var vao uint32
 	gl.GenVertexArrays(1, &vao)
 	l.vaoIDs = append(l.vaoIDs, vao)
 	gl.BindVertexArray(vao)
+
+	// Create a Model object to return
+	var m Model
+	m.vaoID = vao
+	m.vertexCount = int32(len(vertices) / 3)
+	m.indexCount = int32(len(indices))
 
 	// Create the index buffer and bind to the current VAO
 	var ibo uint32
@@ -44,36 +55,36 @@ func (l Loader) MakeModel(vertices, textureCoords []float32, indices []uint32) M
 	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo)
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*4, gl.Ptr(&indices[0]), gl.STATIC_DRAW)
 
-	// Create a VBO for the vertex positions and bind to the current VAO in the 0 index
-	var vbo uint32
-	gl.GenBuffers(1, &vbo)
-	l.vboIDs = append(l.vboIDs, vbo)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0, nil) // Store at index 0 with 3 floats per coordinate
-	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
-
-	// Create a VBO for the texture coordinates and bind to the current VAO in the 1 index
-	var texCoordVBO uint32
-	gl.GenBuffers(1, &texCoordVBO)
-	l.vboIDs = append(l.vboIDs, texCoordVBO)
-	gl.BindBuffer(gl.ARRAY_BUFFER, texCoordVBO)
-	gl.BufferData(gl.ARRAY_BUFFER, len(textureCoords)*4, gl.Ptr(textureCoords), gl.STATIC_DRAW)
-	gl.VertexAttribPointer(1, 2, gl.FLOAT, false, 0, nil) // Store at index 1 with 2 floats per coordinate
-	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+	// Create VBOs for the vertices and texture coordinates and store them in the VAO
+	l.StoreVBOData(m, 0, 3, vertices)
+	l.StoreVBOData(m, 1, 2, textureCoords)
 
 	// Unbind the current VAO
 	gl.BindVertexArray(0)
 
-	// Create a Model object and set some data, then return
-	var m Model
-	m.vaoID = vao
-	m.vertexCount = int32(len(vertices) / 3)
-	m.indexCount = int32(len(indices))
-
 	return m
 }
 
+// StoreVBOData will get the VAO of a Model, bind it, then store data in a VBO at index [attribute]
+func (l Loader) StoreVBOData(m Model, attribute uint32, stride int32, data []float32) {
+	// Get the vaoID for the Model and bind it
+	vao := m.vaoID
+	gl.BindVertexArray(vao)
+
+	// Create a new VBO and store it in the current VAO at index [attribute]
+	var vbo uint32
+	gl.GenBuffers(1, &vbo)
+	l.vboIDs = append(l.vboIDs, vbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(data)*4, gl.Ptr(data), gl.STATIC_DRAW)
+	gl.VertexAttribPointer(attribute, stride, gl.FLOAT, false, 0, nil) // Store at index [attribute] with [stride] floats per coordinate
+	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+
+	// Unbind the vao
+	gl.BindVertexArray(0)
+}
+
+// LoadTexture will take a filename of a png image and return a pointer to the Texture representation of that image
 func (l Loader) LoadTexture(filename string, wrapS, wrapT int32) (*Texture, error) {
 
 	infile, err := os.Open("res/" + filename + ".PNG")
@@ -117,6 +128,7 @@ func (l Loader) LoadTexture(filename string, wrapS, wrapT int32) (*Texture, erro
 
 }
 
+// Clean will delete all of the VAOs, VBOs, and Textures that have been loaded
 func (l Loader) Clean() {
 	for _, vao := range l.vaoIDs {
 		gl.DeleteVertexArrays(1, &vao)
