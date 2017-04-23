@@ -14,12 +14,12 @@ type Loader struct {
 }
 
 // Generates a VBO and VAO which represent a model
-func (l Loader) MakeModel(vertices []float32) Model {
-	// var ibo uint32
-	// gl.GenBuffers(1, &ibo)
-	// l.vboIDs = append(l.vboIDs, ibo)
-	// gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo)
-	// gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*4, gl.Ptr(&indices[0]), gl.STATIC_DRAW)
+func (l Loader) MakeModel(vertices []float32, indices []uint32) Model {
+	var ibo uint32
+	gl.GenBuffers(1, &ibo)
+	l.vboIDs = append(l.vboIDs, ibo)
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*4, gl.Ptr(&indices[0]), gl.STATIC_DRAW)
 
 	var vbo uint32
 	gl.GenBuffers(1, &vbo)
@@ -31,6 +31,7 @@ func (l Loader) MakeModel(vertices []float32) Model {
 	gl.GenVertexArrays(1, &vao)
 	l.vaoIDs = append(l.vaoIDs, vao)
 	gl.BindVertexArray(vao)
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0, nil)
 

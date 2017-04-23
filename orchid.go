@@ -22,20 +22,20 @@ func Run(o Options) {
 	var loader Loader
 	var renderer Renderer
 
-	// vertexBufferData := []float32{
-	// 	-0.5, 0.5, 0,
-	// 	-0.5, -0.5, 0,
-	// 	0.5, -0.5, 0,
-	// 	0.5, 0.5, 0}
+	vertexBufferData := []float32{
+		-0.5, 0.5, 0,
+		-0.5, -0.5, 0,
+		0.5, -0.5, 0,
+		0.5, 0.5, 0}
 
-	// var indices = []int{
-	// 	0, 1, 3,
-	// 	3, 1, 2}
+	var indices = []uint32{
+		0, 1, 3,
+		3, 1, 2}
 
-	vertices := []float32{-0.5, 0.5, 0, -0.5, -0.5, 0, 0.5, -0.5, 0, 0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0}
+	// vertices := []float32{-0.5, 0.5, 0, -0.5, -0.5, 0, 0.5, -0.5, 0, 0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0}
 
 	//model := loader.LoadToVAO(vertexBufferData, indices)
-	model := loader.MakeModel(vertices)
+	model := loader.MakeModel(vertexBufferData, indices)
 
 	staticShader, err := CreateShaderProgram("shaders/static.vert", "shaders/static.frag", staticShaderBindFunc)
 	if err != nil {
