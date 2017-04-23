@@ -2,6 +2,9 @@ package orchid
 
 import (
 	"github.com/go-gl/glow/gl"
+	"image/png"
+	"os"
+	"image"
 )
 
 type Model struct {
@@ -11,7 +14,11 @@ type Model struct {
 }
 
 type Loader struct {
-	vaoIDs, vboIDs []uint32
+	vaoIDs, vboIDs, textureIDs []uint32
+}
+
+type Texture struct {
+	glTextureID uint32
 }
 
 // Generates a VBO and VAO which represent a model
@@ -44,6 +51,47 @@ func (l Loader) MakeModel(vertices []float32, indices []uint32) Model {
 	m.indexCount = int32(len(indices))
 
 	return m
+}
+
+func LoadTexture(filename string, wrapS, wrapT int32) (*Texture, error) {
+
+	infile, err := os.Open(filename)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer infile.Close()
+
+	src, err := png.Decode(infile)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	rgba := image.NewNRGBA(src.Bounds())
+	draw.Draw(rgba, rgba.Bounds(), src, image.Pt(0, 0), draw.Src)
+	if rgba.Stride != rgba.Rect.Size().X*4 {
+		return nil, fmt.Errorf("Unsupported Stride")
+	}
+
+	var textureID uint32
+	gl.GenTextures(1, &textureID)
+
+	gl.BindTexture(gl.TEXTURE_2D, textureID)
+
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapS)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapT)
+
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR) // minification filter
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR) // magnification filter
+
+	width := int32(rgba.Rect.Size().X)
+	height := int32(rgba.Rect.Size().Y)
+
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.SRGB_ALPHA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(rgba.Pix))
+
+	var t Texture
+	t.textureID = textureID
+	return &t, nil
+
 }
 
 func (l Loader) Clean() {
