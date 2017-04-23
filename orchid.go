@@ -10,6 +10,10 @@ type Options struct {
 	MSAA int
 }
 
+func staticShaderBindFunc(s ShaderProgram) {
+	s.bindAttribute(0, "position")
+}
+
 func Run(o Options) {
 
 	CreateWindow(o.Title, o.Width, o.Height, o.Fullscreen, o.MSAA)
@@ -30,12 +34,17 @@ func Run(o Options) {
 
 	model := loader.LoadToVAO(vertexBufferData, indices)
 
+	staticShader := CreateShaderProgram("shaders/static.vert", "shaders/static.frag", staticShaderBindFunc)
+
 	for !window.ShouldClose() {
 		renderer.Prepare()
+		staticShader.Start()
 		renderer.Render(model)
+		staticShader.Stop()
 		Maintainance()
 	}
 
+	staticShader.Clean()
 	loader.Clean()
 }
 

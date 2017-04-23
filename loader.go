@@ -50,7 +50,7 @@ func (l Loader) StoreDataInVBO(attributeNumber uint32, data []float32) {
 	l.vboIDs = append(l.vboIDs, vboID)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vboID)
 	gl.BufferData(gl.ARRAY_BUFFER, len(data), gl.Ptr(data), gl.STATIC_DRAW)
-	gl.VertexAttribPointer(attributeNumber, 3, gl.FLOAT, false, 0, nil) // If nil doesn't work, use gl.Ptr(0)
+	gl.VertexAttribPointer(attributeNumber, 3, gl.FLOAT, false, 0, nil)
 	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
 }
 
