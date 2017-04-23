@@ -1,67 +1,57 @@
 package orchid
 
-// import (
-// 	"github.com/go-gl/glow/gl"
-// )
+import (
+	"github.com/go-gl/glow/gl"
+)
 
-// type Model struct {
-// 	vaoID       uint32
-// 	vertexCount int32
-// }
+type Model struct {
+	vaoID       uint32
+	vertexCount int32
+	indexCount  int32
+}
 
-// type Loader struct {
-// 	vaoIDs, vboIDs []uint32
-// }
+type Loader struct {
+	vaoIDs, vboIDs []uint32
+}
 
-// func (l Loader) LoadToVAO(positions []float32, indices []int) Model {
-// 	vaoID := l.CreateVAO()
-// 	l.BindIndexBuffer(indices)
-// 	l.StoreDataInVBO(0, positions)
-// 	unbindVAO()
+// Generates a VBO and VAO which represent a model
+func (l Loader) MakeModel(vertices []float32, indices []uint32) Model {
+	var ibo uint32
+	gl.GenBuffers(1, &ibo)
+	l.vboIDs = append(l.vboIDs, ibo)
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*4, gl.Ptr(&indices[0]), gl.STATIC_DRAW)
 
-// 	var m Model
-// 	m.vaoID = vaoID
-// 	m.vertexCount = int32(len(indices))
+	var vbo uint32
+	gl.GenBuffers(1, &vbo)
+	l.vboIDs = append(l.vboIDs, vbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
 
-// 	return m
-// }
+	var vao uint32
+	gl.GenVertexArrays(1, &vao)
+	l.vaoIDs = append(l.vaoIDs, vao)
+	gl.BindVertexArray(vao)
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0, nil)
 
-// func (l Loader) Clean() {
-// 	for _, vao := range l.vaoIDs {
-// 		gl.DeleteVertexArrays(1, &vao)
-// 	}
+	gl.BindVertexArray(0)
 
-// 	for _, vbo := range l.vboIDs {
-// 		gl.DeleteBuffers(1, &vbo)
-// 	}
-// }
+	var m Model
+	m.vaoID = vao
+	m.vertexCount = int32(len(vertices) / 3)
+	m.indexCount = int32(len(indices))
 
-// func (l Loader) CreateVAO() uint32 {
-// 	var vaoID uint32
-// 	gl.GenVertexArrays(1, &vaoID)
-// 	l.vaoIDs = append(l.vaoIDs, vaoID)
-// 	gl.BindVertexArray(vaoID)
-// 	return vaoID
-// }
+	return m
+}
 
-// func (l Loader) StoreDataInVBO(attributeNumber uint32, data []float32) {
-// 	var vboID uint32
-// 	gl.GenBuffers(1, &vboID)
-// 	l.vboIDs = append(l.vboIDs, vboID)
-// 	gl.BindBuffer(gl.ARRAY_BUFFER, vboID)
-// 	gl.BufferData(gl.ARRAY_BUFFER, len(data)*4, gl.Ptr(data), gl.STATIC_DRAW)
-// 	gl.VertexAttribPointer(attributeNumber, 3, gl.FLOAT, false, 0, nil)
-// 	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
-// }
+func (l Loader) Clean() {
+	for _, vao := range l.vaoIDs {
+		gl.DeleteVertexArrays(1, &vao)
+	}
 
-// func (l Loader) BindIndexBuffer(indices []int) {
-// 	var vboID uint32
-// 	gl.GenBuffers(1, &vboID)
-// 	l.vboIDs = append(l.vboIDs, vboID)
-// 	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, vboID)
-// 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*4, gl.Ptr(&indices[0]), gl.STATIC_DRAW)
-// }
-
-// func unbindVAO() {
-// 	gl.BindVertexArray(0)
-// }
+	for _, vbo := range l.vboIDs {
+		gl.DeleteBuffers(1, &vbo)
+	}
+}

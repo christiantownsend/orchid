@@ -37,6 +37,8 @@ func Run(o Options) {
 	//model := loader.LoadToVAO(vertexBufferData, indices)
 	model := loader.MakeModel(vertexBufferData, indices)
 
+	model2 := loader.MakeModel([]float32{-1, -1, 0, -1, -.2, 0, -.5, -.5, 0, -.5, -1, 0}, []uint32{0, 3, 2, 2, 1, 0})
+
 	staticShader, err := CreateShaderProgram("shaders/static.vert", "shaders/static.frag", staticShaderBindFunc)
 	if err != nil {
 		LogError(err)
@@ -44,13 +46,12 @@ func Run(o Options) {
 
 	for !window.ShouldClose() {
 		renderer.Prepare()
-		staticShader.Start()
-		renderer.Render(model)
-		staticShader.Stop()
+		renderer.Render(model, staticShader)
+		renderer.Render(model2, staticShader)
 		Maintainance()
 	}
 
-	staticShader.Clean()
+	CleanShaderPrograms()
 	loader.Clean()
 }
 

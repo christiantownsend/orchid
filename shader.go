@@ -33,7 +33,7 @@ func CreateShaderProgram(vertexFilepath, fragmentFilepath string, bindAttributes
 	gl.AttachShader(s.programID, s.vertID)
 	gl.AttachShader(s.programID, s.fragID)
 	gl.LinkProgram(s.programID)
-	//gl.ValidateProgram(s.programID)
+	gl.ValidateProgram(s.programID)
 
 	// Check status of program
 	var status int32
@@ -86,31 +86,6 @@ func CleanShaderPrograms() {
 		shader.Clean()
 	}
 }
-
-// func loadShader(filepath string, shaderType uint32) (uint32, error) {
-// 	// b, err := ioutil.ReadFile(filepath)
-
-// 	// if err != nil {
-// 	// 	LogError(err)
-// 	// }
-
-// 	// cstring := string(b) + "\x00"
-
-// 	shaderCode, free := gl.Strs(code)
-// 	defer free()
-
-// 	shaderID := gl.CreateShader(shaderType)
-// 	gl.ShaderSource(shaderID, 1, shaderCode, nil)
-// 	gl.CompileShader(shaderID)
-// 	var status int32
-// 	gl.GetShaderiv(shaderID, gl.COMPILE_STATUS, &status)
-// 	if status == gl.FALSE {
-// 		return 0, fmt.Errorf("Could not compile shader %s", filepath)
-// 	}
-
-// 	return shaderID, nil
-
-// }
 
 func compileShader(source string, shaderType uint32) (uint32, error) {
 	// Create new shader
