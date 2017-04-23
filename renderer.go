@@ -14,8 +14,8 @@ func (r Renderer) Prepare() {
 func (r Renderer) Render(m Model) {
 	gl.BindVertexArray(m.vaoID)
 	gl.EnableVertexAttribArray(0)
-	gl.DrawElements(gl.TRIANGLES, m.vertexCount, gl.UNSIGNED_INT, nil)
-	//gl.DrawArrays(gl.TRIANGLES, 0, m.vertexCount)
+	//gl.DrawElements(gl.TRIANGLES, m.vertexCount, gl.UNSIGNED_INT, nil)
+	gl.DrawArrays(gl.TRIANGLES, 0, m.vertexCount)
 	gl.DisableVertexAttribArray(0)
 	gl.BindVertexArray(0)
 }

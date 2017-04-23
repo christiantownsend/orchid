@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/go-gl/glow/gl"
 )
@@ -16,14 +17,14 @@ type ShaderProgram struct {
 
 type bindAttributesFunc func(ShaderProgram)
 
-func CreateShaderProgram(vertexFilepath, fragmentFilepath string, bindAttributes bindAttributesFunc) ShaderProgram {
+func CreateShaderProgram(vertexFilepath, fragmentFilepath string, bindAttributes bindAttributesFunc) (ShaderProgram, error) {
 	var s ShaderProgram
 	var err error
-	s.vertID, err = loadShader(vertexFilepath, gl.VERTEX_SHADER)
+	s.vertID, err = compileShader(readShaderFile(vertexFilepath), gl.VERTEX_SHADER)
 	if err != nil {
 		LogError(err)
 	}
-	s.fragID, err = loadShader(fragmentFilepath, gl.FRAGMENT_SHADER)
+	s.fragID, err = compileShader(readShaderFile(fragmentFilepath), gl.FRAGMENT_SHADER)
 	if err != nil {
 		LogError(err)
 	}
@@ -32,13 +33,26 @@ func CreateShaderProgram(vertexFilepath, fragmentFilepath string, bindAttributes
 	gl.AttachShader(s.programID, s.vertID)
 	gl.AttachShader(s.programID, s.fragID)
 	gl.LinkProgram(s.programID)
-	gl.ValidateProgram(s.programID)
+	//gl.ValidateProgram(s.programID)
+
+	// Check status of program
+	var status int32
+	gl.GetProgramiv(s.programID, gl.LINK_STATUS, &status)
+	if status == gl.FALSE {
+		var logLength int32
+		gl.GetProgramiv(s.programID, gl.INFO_LOG_LENGTH, &logLength)
+
+		log := strings.Repeat("\x00", int(logLength+1))
+		gl.GetProgramInfoLog(s.programID, logLength, nil, gl.Str(log))
+
+		return s, fmt.Errorf("failed to link program: %v", log)
+	}
 
 	bindAttributes(s)
 
 	shaderPrograms = append(shaderPrograms, s)
 
-	return s
+	return s, nil
 }
 
 func (s ShaderProgram) Start() {
@@ -73,15 +87,60 @@ func CleanShaderPrograms() {
 	}
 }
 
-func loadShader(filepath string, shaderType uint32) (uint32, error) {
-	// b, err := ioutil.ReadFile(filepath)
+// func loadShader(filepath string, shaderType uint32) (uint32, error) {
+// 	// b, err := ioutil.ReadFile(filepath)
 
-	// if err != nil {
-	// 	LogError(err)
-	// }
+// 	// if err != nil {
+// 	// 	LogError(err)
+// 	// }
 
-	// cstring := string(b) + "\x00"
+// 	// cstring := string(b) + "\x00"
 
+// 	shaderCode, free := gl.Strs(code)
+// 	defer free()
+
+// 	shaderID := gl.CreateShader(shaderType)
+// 	gl.ShaderSource(shaderID, 1, shaderCode, nil)
+// 	gl.CompileShader(shaderID)
+// 	var status int32
+// 	gl.GetShaderiv(shaderID, gl.COMPILE_STATUS, &status)
+// 	if status == gl.FALSE {
+// 		return 0, fmt.Errorf("Could not compile shader %s", filepath)
+// 	}
+
+// 	return shaderID, nil
+
+// }
+
+func compileShader(source string, shaderType uint32) (uint32, error) {
+	// Create new shader
+	shader := gl.CreateShader(shaderType)
+
+	// Convert shader string to C
+	shaderCode, free := gl.Strs(source)
+	defer free()
+	gl.ShaderSource(shader, 1, shaderCode, nil)
+
+	// Compile shader
+	gl.CompileShader(shader)
+
+	// Check shader status
+	var status int32
+	gl.GetShaderiv(shader, gl.COMPILE_STATUS, &status)
+	if status == gl.FALSE {
+		var logLength int32
+		gl.GetShaderiv(shader, gl.INFO_LOG_LENGTH, &logLength)
+
+		log := strings.Repeat("\x00", int(logLength+1))
+		gl.GetShaderInfoLog(shader, logLength, nil, gl.Str(log))
+
+		return 0, fmt.Errorf("Failed to compile %v: %v", source, log)
+	}
+
+	return shader, nil
+}
+
+func readShaderFile(filepath string) string {
 	code := ""
 
 	f, err := os.Open(filepath)
@@ -98,19 +157,5 @@ func loadShader(filepath string, shaderType uint32) (uint32, error) {
 		panic(err)
 	}
 	code += "\x00"
-
-	shaderCode, free := gl.Strs(code)
-	defer free()
-
-	shaderID := gl.CreateShader(shaderType)
-	gl.ShaderSource(shaderID, 1, shaderCode, nil)
-	gl.CompileShader(shaderID)
-	var status int32
-	gl.GetShaderiv(shaderID, gl.COMPILE_STATUS, &status)
-	if status == gl.FALSE {
-		return 0, fmt.Errorf("Could not compile shader %s", filepath)
-	}
-
-	return shaderID, nil
-
+	return code
 }
