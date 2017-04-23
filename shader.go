@@ -32,6 +32,9 @@ func CreateShaderProgram(vertexFilepath, fragmentFilepath string, bindAttributes
 	s.programID = gl.CreateProgram()
 	gl.AttachShader(s.programID, s.vertID)
 	gl.AttachShader(s.programID, s.fragID)
+
+	bindAttributes(s)
+
 	gl.LinkProgram(s.programID)
 	gl.ValidateProgram(s.programID)
 
@@ -47,8 +50,6 @@ func CreateShaderProgram(vertexFilepath, fragmentFilepath string, bindAttributes
 
 		return s, fmt.Errorf("failed to link program: %v", log)
 	}
-
-	bindAttributes(s)
 
 	shaderPrograms = append(shaderPrograms, s)
 

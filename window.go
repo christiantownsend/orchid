@@ -73,10 +73,6 @@ func CreateWindow(title string, width int, height int, fullscreen bool, MSAA int
 	gl.Viewport(0, 0, int32(width), int32(height))
 }
 
-func ShouldClose() bool {
-	return window.ShouldClose()
-}
-
 func Maintainance() {
 	window.SwapBuffers()
 	glfw.PollEvents()

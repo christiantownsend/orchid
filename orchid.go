@@ -1,5 +1,7 @@
 package orchid
 
+import "github.com/go-gl/glow/gl"
+
 type Options struct {
 	Title string
 
@@ -8,10 +10,19 @@ type Options struct {
 	Fullscreen bool
 
 	MSAA int
+
+	TextureInterpolationMode int32
 }
+
+var (
+	options Options
+	LINEAR  int32 = gl.LINEAR
+	NEAREST int32 = gl.NEAREST
+)
 
 func staticShaderBindFunc(s ShaderProgram) {
 	s.bindAttribute(0, "position")
+	s.bindAttribute(1, "textureCoords")
 }
 
 func Run(o Options) {
@@ -28,16 +39,23 @@ func Run(o Options) {
 		0.5, -0.5, 0,
 		0.5, 0.5, 0}
 
-	var indices = []uint32{
+	textureCoords := []float32{
+		0, 0,
+		0, 1,
+		1, 1,
+		1, 0}
+
+	indices := []uint32{
 		0, 1, 3,
 		3, 1, 2}
 
-	// vertices := []float32{-0.5, 0.5, 0, -0.5, -0.5, 0, 0.5, -0.5, 0, 0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0}
+	model := loader.MakeModel(vertexBufferData, textureCoords, indices)
+	texture, err := loader.LoadTexture("textureTest", gl.REPEAT, gl.REPEAT)
+	if err != nil {
+		LogError(err)
+	}
 
-	//model := loader.LoadToVAO(vertexBufferData, indices)
-	model := loader.MakeModel(vertexBufferData, indices)
-
-	model2 := loader.MakeModel([]float32{-1, -1, 0, -1, -.2, 0, -.5, -.5, 0, -.5, -1, 0}, []uint32{0, 3, 2, 2, 1, 0})
+	texturedModel := TexturedModel{model, texture}
 
 	staticShader, err := CreateShaderProgram("shaders/static.vert", "shaders/static.frag", staticShaderBindFunc)
 	if err != nil {
@@ -46,8 +64,9 @@ func Run(o Options) {
 
 	for !window.ShouldClose() {
 		renderer.Prepare()
-		renderer.Render(model, staticShader)
-		renderer.Render(model2, staticShader)
+		staticShader.Start()
+		renderer.Render(texturedModel)
+		staticShader.Stop()
 		Maintainance()
 	}
 
@@ -55,13 +74,16 @@ func Run(o Options) {
 	loader.Clean()
 }
 
-func SetRunOptions(title string, width int, height int, fullscreen bool, MSAA int) Options {
+func SetRunOptions(title string, width int, height int, fullscreen bool, MSAA int, texIntMode int32) Options {
 	var o Options
 	o.Title = title
 	o.Width = width
 	o.Height = height
 	o.Fullscreen = fullscreen
 	o.MSAA = MSAA
+	o.TextureInterpolationMode = texIntMode
+
+	options = o
 
 	return o
 }
