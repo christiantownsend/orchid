@@ -15,66 +15,13 @@ type Options struct {
 }
 
 var (
-	options Options
-	LINEAR  int32 = gl.LINEAR
-	NEAREST int32 = gl.NEAREST
+	optionsSet bool
+	options    Options
+	LINEAR     int32 = gl.LINEAR
+	NEAREST    int32 = gl.NEAREST
 )
 
-func staticShaderBindFunc(s ShaderProgram) {
-	s.bindAttribute(0, "position")
-	s.bindAttribute(1, "textureCoords")
-}
-
-func Run(o Options) {
-
-	CreateWindow(o.Title, o.Width, o.Height, o.Fullscreen, o.MSAA)
-	defer DestroyWindow()
-
-	var loader Loader
-	var renderer Renderer
-
-	vertexBufferData := []float32{
-		-0.7, 0.7, 0,
-		-0.5, -0.5, 0,
-		0.7, -0.7, 0,
-		0.5, 0.5, 0}
-
-	textureCoords := []float32{
-		0, 0,
-		0, 1,
-		1, 1,
-		1, 0}
-
-	indices := []uint32{
-		0, 1, 3,
-		3, 1, 2}
-
-	model := loader.MakeModel(vertexBufferData, textureCoords, indices)
-	texture, err := loader.LoadTexture("textureTest", gl.REPEAT, gl.REPEAT)
-	if err != nil {
-		LogError(err)
-	}
-
-	texturedModel := TexturedModel{model, texture}
-
-	staticShader, err := CreateShaderProgram("shaders/static.vert", "shaders/static.frag", staticShaderBindFunc)
-	if err != nil {
-		LogError(err)
-	}
-
-	for !window.ShouldClose() {
-		renderer.Prepare()
-		staticShader.Start()
-		renderer.Render(texturedModel)
-		staticShader.Stop()
-		Maintainance()
-	}
-
-	CleanShaderPrograms()
-	loader.Clean()
-}
-
-func SetRunOptions(title string, width int, height int, fullscreen bool, MSAA int, texIntMode int32) Options {
+func CreateRunOptions(title string, width int, height int, fullscreen bool, MSAA int, texIntMode int32) Options {
 	var o Options
 	o.Title = title
 	o.Width = width
@@ -83,7 +30,24 @@ func SetRunOptions(title string, width int, height int, fullscreen bool, MSAA in
 	o.MSAA = MSAA
 	o.TextureInterpolationMode = texIntMode
 
-	options = o
-
 	return o
+}
+
+func SetRunOptions(o Options) {
+
+	if o.Width == 0 {
+		o.Width = 800
+	}
+	if o.Height == 0 {
+		o.Height = 600
+	}
+	if o.MSAA != 0 && o.MSAA != 2 && o.MSAA != 4 && o.MSAA != 8 && o.MSAA != 16 {
+		o.MSAA = 0
+	}
+	if o.TextureInterpolationMode != gl.LINEAR && o.TextureInterpolationMode != gl.NEAREST {
+		o.TextureInterpolationMode = gl.LINEAR
+	}
+
+	options = o
+	optionsSet = true
 }

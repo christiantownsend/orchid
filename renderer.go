@@ -12,8 +12,8 @@ func (r Renderer) Prepare() {
 }
 
 func (r Renderer) Render(tm TexturedModel) {
-	m := tm.model
-	t := tm.texture
+	m := tm.Model
+	t := tm.Texture
 
 	gl.BindVertexArray(m.vaoID)
 	gl.EnableVertexAttribArray(0)

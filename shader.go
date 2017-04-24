@@ -58,9 +58,6 @@ func CreateShaderProgram(vertexFilepath, fragmentFilepath string, bindAttributes
 
 func (s ShaderProgram) Start() {
 	gl.UseProgram(s.programID)
-	if s.programID == 1 {
-		fmt.Println("IT was!@")
-	}
 }
 
 func (s ShaderProgram) Stop() {
@@ -76,7 +73,7 @@ func (s ShaderProgram) Clean() {
 	gl.DeleteProgram(s.programID)
 }
 
-func (s ShaderProgram) bindAttribute(attribute uint32, variableName string) {
+func (s ShaderProgram) BindAttribute(attribute uint32, variableName string) {
 	variableNameC, free := gl.Strs(variableName)
 	defer free()
 	gl.BindAttribLocation(s.programID, attribute, *variableNameC)

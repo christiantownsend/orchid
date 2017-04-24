@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	window *glfw.Window
+//window *glfw.Window
 )
 
 func init() {
@@ -16,7 +16,19 @@ func init() {
 }
 
 // CreateWindow will create a new window with a glfw context
-func CreateWindow(title string, width int, height int, fullscreen bool, MSAA int) {
+func CreateWindow() *glfw.Window {
+
+	if !optionsSet {
+		var o Options
+		SetRunOptions(o)
+	}
+
+	title := options.Title
+	width := options.Width
+	height := options.Height
+	fullscreen := options.Fullscreen
+	MSAA := options.MSAA
+
 	// Initialize glfw
 	err := glfw.Init()
 	LogError(err)
@@ -57,7 +69,7 @@ func CreateWindow(title string, width int, height int, fullscreen bool, MSAA int
 	glfw.WindowHint(glfw.Samples, MSAA) // Set MSAA (antialiasing) levels
 
 	// Create window
-	window, err = glfw.CreateWindow(width, height, title, monitor, nil)
+	window, err := glfw.CreateWindow(width, height, title, monitor, nil)
 	LogError(err)
 
 	window.MakeContextCurrent()
@@ -76,17 +88,15 @@ func CreateWindow(title string, width int, height int, fullscreen bool, MSAA int
 	window.SetMouseButtonCallback(MouseClickCallbackHandler)
 	window.SetCursorPosCallback(MousePosCallbackHandler)
 	window.SetScrollCallback(MouseScrollCallbackHandler)
+
+	return window
 }
 
-func Maintainance() {
+func Maintainance(window *glfw.Window) {
 	window.SwapBuffers()
 	glfw.PollEvents()
 }
 
 func DestroyWindow() {
 	glfw.Terminate()
-}
-
-func SetTitle(title string) {
-	window.SetTitle(title)
 }

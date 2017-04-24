@@ -1,0 +1,4 @@
+- Reimplement current functionality with correct OOP (Constructors, Getters, Setters)
+	- shader.go
+	- loader.go
+	- input.go

@@ -12,8 +12,8 @@ import (
 
 // TexturedModel represents a raw Model and a Texture object together
 type TexturedModel struct {
-	model   Model
-	texture *Texture
+	Model   Model
+	Texture *Texture
 }
 
 // Model represents the ID of the VAO associated with it, as well as the vertex and index counts used in rendering
