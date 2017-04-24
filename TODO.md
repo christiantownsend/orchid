@@ -2,3 +2,5 @@
 	- shader.go
 	- loader.go
 	- input.go
+
+- Leave good comments on every exported function and struct
