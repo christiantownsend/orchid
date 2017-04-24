@@ -71,6 +71,11 @@ func CreateWindow(title string, width int, height int, fullscreen bool, MSAA int
 	// Set viewport size
 	width, height = window.GetFramebufferSize()
 	gl.Viewport(0, 0, int32(width), int32(height))
+
+	window.SetKeyCallback(KeyCallbackHandler)
+	window.SetMouseButtonCallback(MouseClickCallbackHandler)
+	window.SetCursorPosCallback(MousePosCallbackHandler)
+	window.SetScrollCallback(MouseScrollCallbackHandler)
 }
 
 func Maintainance() {
