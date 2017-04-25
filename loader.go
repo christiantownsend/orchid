@@ -10,6 +10,11 @@ import (
 	"github.com/go-gl/glow/gl"
 )
 
+var (
+	sManager shaderManager
+	tManager textureManager
+)
+
 // TexturedModel represents a raw Model and a Texture object together
 type TexturedModel struct {
 	model   *Model
@@ -199,4 +204,65 @@ func (l Loader) Clean() {
 	for _, texture := range l.textureIDs {
 		gl.DeleteTextures(1, &texture)
 	}
+}
+
+type shaderManager struct {
+	shaderMap map[string]*ShaderProgram
+}
+
+//TODO move shaders into the loader, and make it easier to work with them
+func (l *Loader) getShader(shaderfile string) *ShaderProgram {
+
+	shader, okay := sManager.shaderMap[shaderfile]
+
+	if okay {
+		return shader
+	}
+	return nil
+}
+
+type textureReference struct {
+	texture  *Texture
+	refCount int
+}
+
+type textureManager struct {
+	textureMap map[string]*textureReference
+}
+
+// TODO need to add a way to change the texture wrap options
+func (l *Loader) getTexture(texturefile string) (*Texture, error) {
+	textureRef, okay := tManager.textureMap[texturefile]
+
+	if okay {
+		textureRef.refCount++
+		return textureRef.texture, nil
+	}
+	texture, err := l.LoadTexture(texturefile, gl.CLAMP_TO_BORDER, gl.CLAMP_TO_BORDER)
+	if err != nil {
+		return nil, err
+	}
+
+	tManager.textureMap[texturefile] = &textureReference{texture, 1}
+
+	return texture, nil
+
+}
+
+// TODO implement unloading textures
+func (l *Loader) unloadTexture(texturefile string) {
+
+}
+
+type Sprite struct {
+	texturedModelId int
+	shaderId        int
+}
+
+func (s *Sprite) Shader(shaderfile string) {
+
+}
+
+func (s *Sprite) Texture(texturefile string) {
+
 }
