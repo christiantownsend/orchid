@@ -12,8 +12,25 @@ import (
 
 // TexturedModel represents a raw Model and a Texture object together
 type TexturedModel struct {
-	Model   Model
-	Texture *Texture
+	model   *Model
+	texture *Texture
+}
+
+func NewTexturedModel(model *Model, texture *Texture) *TexturedModel {
+	tm := TexturedModel{
+		model:   model,
+		texture: texture,
+	}
+
+	return &tm
+}
+
+func (tm TexturedModel) Model() *Model {
+	return tm.model
+}
+
+func (tm TexturedModel) Texture() *Texture {
+	return tm.texture
 }
 
 // Model represents the ID of the VAO associated with it, as well as the vertex and index counts used in rendering
@@ -23,10 +40,14 @@ type Model struct {
 	indexCount  int32
 }
 
-// Loader stores information about which VAOs, VBOs, and Textures have been loaded
-// Models are created through the Loader
-type Loader struct {
-	vaoIDs, vboIDs, textureIDs []uint32
+func NewModel(vaoID uint32, vertexCount, indexCount int32) *Model {
+	m := Model{
+		vaoID:       vaoID,
+		vertexCount: vertexCount,
+		indexCount:  indexCount,
+	}
+
+	return &m
 }
 
 // Texture represents just the ID of the OpenGL Texture object
@@ -34,8 +55,45 @@ type Texture struct {
 	textureID uint32
 }
 
+func NewTexture(textureID uint32) *Texture {
+	t := Texture{
+		textureID: textureID,
+	}
+
+	return &t
+}
+
+func (t Texture) TextureID() uint32 {
+	return t.textureID
+}
+
+// Loader stores information about which VAOs, VBOs, and Textures have been loaded
+// Models are created through the Loader
+type Loader struct {
+	vaoIDs, vboIDs, textureIDs []uint32
+}
+
+func NewLoader() *Loader {
+	var l Loader
+	return &l
+}
+
+/* These are getters for the fields of a loader, unsure if they're needed */
+
+// func (l Loader) VaoIDs() []uint32 {
+// 	return l.vaoIDs
+// }
+
+// func (l Loader) VboIDs() []uint32 {
+// 	return l.vboIDs
+// }
+
+// func (l Loader) TextureIDs() []uint32 {
+// 	return l.textureIDs
+// }
+
 // MakeModel generates a VBO and VAO which represent a model
-func (l Loader) MakeModel(vertices, textureCoords []float32, indices []uint32) Model {
+func (l Loader) MakeModel(vertices, textureCoords []float32, indices []uint32) *Model {
 	// Create new VAO and bind it
 	var vao uint32
 	gl.GenVertexArrays(1, &vao)
@@ -43,10 +101,12 @@ func (l Loader) MakeModel(vertices, textureCoords []float32, indices []uint32) M
 	gl.BindVertexArray(vao)
 
 	// Create a Model object to return
-	var m Model
-	m.vaoID = vao
-	m.vertexCount = int32(len(vertices) / 3)
-	m.indexCount = int32(len(indices))
+	// var m Model
+	// m.vaoID = vao
+	// m.vertexCount = int32(len(vertices) / 3)
+	// m.indexCount = int32(len(indices))
+
+	m := NewModel(vao, int32(len(vertices)/3), int32(len(indices)))
 
 	// Create the index buffer and bind to the current VAO
 	var ibo uint32
@@ -66,7 +126,7 @@ func (l Loader) MakeModel(vertices, textureCoords []float32, indices []uint32) M
 }
 
 // StoreVBOData will get the VAO of a Model, bind it, then store data in a VBO at index [attribute]
-func (l Loader) StoreVBOData(m Model, attribute uint32, stride int32, data []float32) {
+func (l Loader) StoreVBOData(m *Model, attribute uint32, stride int32, data []float32) {
 	// Get the vaoID for the Model and bind it
 	vao := m.vaoID
 	gl.BindVertexArray(vao)
@@ -122,9 +182,8 @@ func (l Loader) LoadTexture(filename string, wrapS, wrapT int32) (*Texture, erro
 
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.SRGB_ALPHA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(rgba.Pix))
 
-	var t Texture
-	t.textureID = textureID
-	return &t, nil
+	t := NewTexture(textureID)
+	return t, nil
 
 }
 

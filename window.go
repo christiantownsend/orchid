@@ -7,19 +7,15 @@ import (
 	gl "github.com/go-gl/glow/gl"
 )
 
-var (
-//window *glfw.Window
-)
-
 func init() {
 	runtime.LockOSThread()
 }
 
 // CreateWindow will create a new window with a glfw context
-func CreateWindow() *glfw.Window {
+func NewWindow() *glfw.Window {
 
 	if !optionsSet {
-		var o Options
+		var o RunOptions
 		SetRunOptions(o)
 	}
 

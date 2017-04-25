@@ -2,7 +2,17 @@ package orchid
 
 import "github.com/go-gl/glow/gl"
 
-type Options struct {
+const (
+	LINEAR  int32 = gl.LINEAR
+	NEAREST int32 = gl.NEAREST
+)
+
+var (
+	optionsSet bool
+	options    RunOptions
+)
+
+type RunOptions struct {
 	Title string
 
 	Width, Height int
@@ -14,26 +24,21 @@ type Options struct {
 	TextureInterpolationMode int32
 }
 
-var (
-	optionsSet bool
-	options    Options
-	LINEAR     int32 = gl.LINEAR
-	NEAREST    int32 = gl.NEAREST
-)
+func NewRunOptions(title string, width int, height int, fullscreen bool, MSAA int, texIntMode int32) RunOptions {
 
-func CreateRunOptions(title string, width int, height int, fullscreen bool, MSAA int, texIntMode int32) Options {
-	var o Options
-	o.Title = title
-	o.Width = width
-	o.Height = height
-	o.Fullscreen = fullscreen
-	o.MSAA = MSAA
-	o.TextureInterpolationMode = texIntMode
+	o := RunOptions{
+		Title:      title,
+		Width:      width,
+		Height:     height,
+		Fullscreen: fullscreen,
+		MSAA:       MSAA,
+		TextureInterpolationMode: texIntMode,
+	}
 
 	return o
 }
 
-func SetRunOptions(o Options) {
+func SetRunOptions(o RunOptions) {
 
 	if o.Width == 0 {
 		o.Width = 800
