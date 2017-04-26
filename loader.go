@@ -232,13 +232,17 @@ type textureManager struct {
 
 // TODO need to add a way to change the texture wrap options
 func (l *Loader) getTexture(texturefile string) (*Texture, error) {
+	return l.getTextureWraps(texturefile, gl.CLAMP_TO_BORDER, gl.CLAMP_TO_BORDER)
+}
+
+func (l *Loader) getTextureWraps(texturefile string, wrapS, wrapT int32) (*Texture, error) {
 	textureRef, okay := tManager.textureMap[texturefile]
 
-	if okay {
+	if okay && textureRef.refCount > 0 {
 		textureRef.refCount++
 		return textureRef.texture, nil
 	}
-	texture, err := l.LoadTexture(texturefile, gl.CLAMP_TO_BORDER, gl.CLAMP_TO_BORDER)
+	texture, err := l.LoadTexture(texturefile, wrapS, wrapT)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +250,6 @@ func (l *Loader) getTexture(texturefile string) (*Texture, error) {
 	tManager.textureMap[texturefile] = &textureReference{texture, 1}
 
 	return texture, nil
-
 }
 
 // TODO implement unloading textures
