@@ -80,6 +80,8 @@ type Loader struct {
 
 func NewLoader() *Loader {
 	var l Loader
+	sManager = shaderManager{}
+	tManager = textureManager{}
 	return &l
 }
 
