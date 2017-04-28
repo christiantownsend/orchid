@@ -99,8 +99,8 @@ func NewLoader() *Loader {
 // 	return l.textureIDs
 // }
 
-// MakeModel generates a VBO and VAO which represent a model
-func (l Loader) MakeModel(vertices, textureCoords []float32, indices []uint32) *Model {
+// LoadModel generates a VBO and VAO which represent a model
+func (l Loader) LoadModel(vertices, textureCoords []float32, indices []uint32) *Model {
 	// Create new VAO and bind it
 	var vao uint32
 	gl.GenVertexArrays(1, &vao)
@@ -239,6 +239,7 @@ func (l *Loader) getTexture(texturefile string) (*Texture, error) {
 
 func (l *Loader) getTextureWraps(texturefile string, wrapS, wrapT int32) (*Texture, error) {
 	textureRef, okay := tManager.textureMap[texturefile]
+	
 
 	if okay && textureRef.refCount > 0 {
 		textureRef.refCount++
@@ -255,8 +256,13 @@ func (l *Loader) getTextureWraps(texturefile string, wrapS, wrapT int32) (*Textu
 }
 
 // TODO implement unloading textures
-func (l *Loader) unloadTexture(texturefile string) {
-
+func (l *Loader) unloadTexture(texturefile string) error {
+	tref, okay := tManager.textureMap[texturefile]
+	if !okay && tref.refCount < 1 {
+		return fmt.Errorf("Texture not loaded")
+	}
+	tref.refCount--
+	return nil
 }
 
 type Sprite struct {
