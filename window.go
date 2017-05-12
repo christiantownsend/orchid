@@ -3,7 +3,7 @@ package orchid
 import (
 	"runtime"
 
-	glfw "github.com/go-gl/glfw/v3.1/glfw"
+	glfw "github.com/go-gl/glfw/v3.2/glfw"
 	gl "github.com/go-gl/glow/gl"
 )
 
