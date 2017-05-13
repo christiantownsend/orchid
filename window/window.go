@@ -1,17 +1,20 @@
-package orchid
+package window
 
 import (
+	"log"
 	"runtime"
 
 	glfw "github.com/go-gl/glfw/v3.2/glfw"
 	gl "github.com/go-gl/glow/gl"
+
+	input "orchid/input"
 )
 
 func init() {
 	runtime.LockOSThread()
 }
 
-// CreateWindow will create a new window with a glfw context
+// NewWindow will create a new window with a glfw context
 func NewWindow() *glfw.Window {
 
 	if !optionsSet {
@@ -19,15 +22,15 @@ func NewWindow() *glfw.Window {
 		SetRunOptions(o)
 	}
 
-	title := options.Title
-	width := options.Width
-	height := options.Height
-	fullscreen := options.Fullscreen
-	MSAA := options.MSAA
+	title := Options.Title
+	width := Options.Width
+	height := Options.Height
+	fullscreen := Options.Fullscreen
+	MSAA := Options.MSAA
 
 	// Initialize glfw
 	err := glfw.Init()
-	LogError(err)
+	log.Fatal(err)
 
 	// Get values for video mode from the primary monitor
 	monitor := glfw.GetPrimaryMonitor()
@@ -66,13 +69,13 @@ func NewWindow() *glfw.Window {
 
 	// Create window
 	window, err := glfw.CreateWindow(width, height, title, monitor, nil)
-	LogError(err)
+	log.Fatal(err)
 
 	window.MakeContextCurrent()
 
 	// Initialize OpenGL
 	err = gl.Init()
-	LogError(err)
+	log.Fatal(err)
 
 	gl.Enable(gl.MULTISAMPLE) // Enable MSAA
 
@@ -80,10 +83,10 @@ func NewWindow() *glfw.Window {
 	width, height = window.GetFramebufferSize()
 	gl.Viewport(0, 0, int32(width), int32(height))
 
-	window.SetKeyCallback(KeyCallbackHandler)
-	window.SetMouseButtonCallback(MouseClickCallbackHandler)
-	window.SetCursorPosCallback(MousePosCallbackHandler)
-	window.SetScrollCallback(MouseScrollCallbackHandler)
+	window.SetKeyCallback(input.KeyCallbackHandler)
+	window.SetMouseButtonCallback(input.MouseClickCallbackHandler)
+	window.SetCursorPosCallback(input.MousePosCallbackHandler)
+	window.SetScrollCallback(input.MouseScrollCallbackHandler)
 
 	return window
 }

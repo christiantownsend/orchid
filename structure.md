@@ -1,6 +1,3 @@
-
-
-
 Game Assumptions:
 	Movement is defined as distance per tick
 
